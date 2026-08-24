@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is My RAG Broken? â€” Free Checker by PaperPup</title>
+<meta name="description" content="Answer a few simple questions and find out why your RAG setup gives wrong answers. Free, private, runs in your browser.">
+<style>
+  :root {
+    --paper: #FAF8F3; --ink: #2B2B2B; --blue: #24536B;
+    --orange: #C96F43; --green: #2E6B5A; --red: #A33B3B;
+    --card: #FFFFFF; --line: #E5DFD3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif; font-size: 17px; line-height: 1.55;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
+  header { text-align: center; padding: 28px 0 8px; }
+  .brand { font-family: Arial, Helvetica, sans-serif; font-weight: bold; letter-spacing: 3px;
+           font-size: 12px; color: var(--blue); text-transform: uppercase; }
+  h1 { font-size: 30px; margin: 10px 0 6px; color: var(--blue); }
+  .sub { color: #5a564d; font-size: 16px; margin: 0 auto 8px; max-width: 560px; }
+  .privacy { font-size: 13px; color: #7a756a; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+          padding: 22px 22px 18px; margin: 18px 0; }
+  .stepnum { display: inline-block; width: 30px; height: 30px; border-radius: 50%;
+             background: var(--blue); color: #fff; text-align: center; line-height: 30px;
+             font-family: Arial, sans-serif; font-weight: bold; font-size: 15px; margin-right: 8px; }
+  h2 { font-size: 19px; margin: 0 0 10px; display: flex; align-items: center; }
+  p.hint { font-size: 14px; color: #6b6659; margin: 0 0 12px; }
+  textarea { width: 100%; min-height: 90px; border: 1px solid var(--line); border-radius: 8px;
+             padding: 10px; font-family: inherit; font-size: 15px; background: var(--paper); resize: vertical; }
+  textarea:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+  label.q { display: block; margin: 14px 0 6px; font-weight: bold; }
+  .choices { display: flex; gap: 10px; flex-wrap: wrap; }
+  .choices button { font-family: Arial, sans-serif; font-size: 15px; padding: 8px 18px;
+                    border-radius: 999px; border: 2px solid var(--line); background: #fff;
+                    cursor: pointer; color: var(--ink); }
+  .choices button.on { border-color: var(--blue); background: var(--blue); color: #fff; }
+  .gobtn { display: block; width: 100%; margin-top: 22px; padding: 14px; font-size: 18px;
+           font-family: Arial, sans-serif; font-weight: bold; color: #fff; background: var(--orange);
+           border: none; border-radius: 10px; cursor: pointer; }
+  .gobtn:hover { filter: brightness(0.95); }
+  #results:empty::before { content: ""; }
+  .verdict { border-left: 6px solid var(--red); }
+  .verdict.ok { border-left-color: var(--green); }
+  .verdict.warn { border-left-color: var(--orange); }
+  .badge { display: inline-block; font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;
+           letter-spacing: 1px; text-transform: uppercase; color: #fff; border-radius: 4px;
+           padding: 3px 8px; margin-right: 6px; }
+  .badge.bad { background: var(--red); } .badge.warnb { background: var(--orange); }
+  .badge.good { background: var(--green); }
+  .fcode { display: inline-block; font-family: 'Courier New', monospace; font-size: 13px;
+           background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+           padding: 2px 7px; color: var(--blue); }
+  h3 { margin: 12px 0 4px; font-size: 16px; }
+  ul.fix { margin: 6px 0 8px; padding-left: 22px; }
+  ul.fix li { margin-bottom: 4px; }
+  .cta { display: inline-block; font-family: Arial, sans-serif; font-size: 14px; font-weight: bold;
+         text-decoration: none; color: #fff; background: var(--blue); padding: 8px 14px;
+         border-radius: 8px; margin: 6px 8px 0 0; }
+  .cta.alt { background: var(--green); }
+  details { margin-top: 10px; font-size: 14px; color: #55503f; }
+  summary { cursor: pointer; color: var(--blue); font-weight: bold; }
+  footer { text-align: center; font-size: 13px; color: #8a857a; margin-top: 40px; }
+  footer a { color: var(--blue); }
+  .wordbook { background: #F2EEE4; border-radius: 8px; padding: 14px 18px; margin: 14px 0;
+              font-size: 14.5px; }
+  .wordbook dt { font-weight: bold; color: var(--blue); }
+  .wordbook dd { margin: 2px 0 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand">PaperPup &middot; Free Tool</div>
+  <h1>Is My RAG Broken?</h1>
+  <p class="sub">Your AI chatbot reads your documents and still gives wrong answers?
+     Answer a few easy questions. Get the reason in plain words &mdash; and the fix.</p>
+  <p class="privacy">&#128274; Private: everything happens in your browser. Nothing you type leaves this page.</p>
+</header>
+
+<div class="wordbook">
+  <strong>Three words this page uses:</strong>
+  <dl>
+    <dt>Chunk</dt><dd>A small piece cut from your document, so the computer can search it fast.</dd>
+    <dt>Retrieve</dt><dd>The search step. The computer picks the chunks that look closest to your question.</dd>
+    <dt>Reader brain (embedding model)</dt><dd>The small model that turns text into numbers so chunks can be compared with your question.</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h2><span class="stepnum">1</span>Your question</h2>
+  <p class="hint">The exact question you asked your RAG setup.</p>
+  <textarea id="question" placeholder="Example: What is the refund policy?"></textarea>
+</div>
+
+<div class="card">
+  <h2><span class="stepnum">2</span>The pieces it found (chunks)</h2>
+  <p class="hint">Most tools show you the pieces they searched. Paste them here.
+     Put a line with only <code>---</code> between pieces. If your tool found nothing, leave this empty.</p>
+  <textarea id="chunks" style="min-height:150px" placeholder="Refunds are available within 30 days of purchase.&#10;---&#10;Shipping takes 3 to 5 business days."></textarea>
+</div>
+
+<div class="card">
+  <h2><span class="stepnum">3</span>The answer you got</h2>
+  <p class="hint">Paste what the chatbot said back to you.</p>
+  <textarea id="answer" placeholder="Example: You can return items within 30 days."></textarea>
+
+  <label class="q">A. Does the missing or correct information exist somewhere in your full document?</label>
+  <div class="choices" data-q="inDoc">
+    <button type="button" data-v="yes">Yes</button>
+    <button type="button" data-v="no">No</button>
+    <button type="button" data-v="unsure">Not sure</button>
+  </div>
+
+  <label class="q">B. Do the pasted chunks above contain the facts used in the answer?</label>
+  <div class="choices" data-q="chunksHaveFacts">
+    <button type="button" data-v="yes">Yes, mostly</button>
+    <button type="button" data-v="no">No, the answer seems made up</button>
+    <button type="button" data-v="generic">The answer is too general &mdash; it ignores my documents</button>
+    <button type="button" data-v="unsure">Not sure</button>
+  </div>
+
+  <label class="q">C. Did you recently change the reader brain (embedding model) or switch apps?</label>
+  <div class="choices" data-q="changedBrain">
+    <button type="button" data-v="yes">Yes</button>
+    <button type="button" data-v="no">No</button>
+    <button type="button" data-v="unsure">Not sure</button>
+  </div>
+
+  <button class="gobtn" id="run">Check My Setup &rarr;</button>
+</div>
+
+<div id="results"></div>
+
+<footer>
+  Made by <a href="https://marshwillow.gumroad.com/" rel="noopener">PaperPup</a> &middot;
+  Plain-English guides for local AI. No account needed, nothing stored.
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- choice buttons -------------------------------------------------
+  var answers = {};
+  document.querySelectorAll(".choices").forEach(function (group) {
+    var key = group.getAttribute("data-q");
+    group.querySelectorAll("button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        group.querySelectorAll("button").forEach(function (b) { b.classList.remove("on"); });
+        btn.classList.add("on");
+        answers[key] = btn.getAttribute("data-v");
+      });
+    });
+  });
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  // ---- chunk parsing ---------------------------------------------------
+  function parseChunks(raw) {
+    if (!raw) return [];
+    return raw.split(/^\s*-{3,}\s*$/m)
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length > 0; });
+  }
+
+  var STOP = ["what","is","the","a","an","of","for","to","in","on","do","does","did","my",
+              "me","i","you","your","it","and","or","how","when","where","who","can","are",
+              "was","were","with","about","from","at","by","be","this","that"];
+  function keywords(text) {
+    return text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+      .filter(function (w) { return w.length > 2 && STOP.indexOf(w) === -1; });
+  }
+
+  // ---- fix cards -------------------------------------------------------
+  var LINKS = {
+    core: "https://marshwillow.gumroad.com/",
+    owui: "https://marshwillow.gumroad.com/l/rag-without-the-headaches-open-webui",
+    lms:  "https://marshwillow.gumroad.com/l/rag-without-the-headaches-lm-studio"
+  };
+
+  function card(kind, title, fcode, meaning, fixes, readmore, ctaHref, ctaLabel) {
+    var cls = kind === "ok" ? "ok" : (kind === "warn" ? "warn" : "");
+    var badge = kind === "ok" ? '<span class="badge good">Looks healthy</span>'
+              : kind === "warn" ? '<span class="badge warnb">Worth fixing</span>'
+              : '<span class="badge bad">Problem found</span>';
+    var code = fcode ? '<span class="fcode">' + fcode + "</span>" : "";
+    var html = '<div class="card verdict ' + cls + '">' +
+      "<h2>" + badge + code + " " + title + "</h2>" +
+      "<p><strong>What this means.</strong> " + meaning + "</p>" +
+      "<h3>How to fix it</h3><ul class='fix'>";
+    fixes.forEach(function (f) { html += "<li>" + f + "</li>"; });
+    html += "</ul>";
+    if (readmore) html += "<details><summary>Why this happens</summary><p>" + readmore + "</p></details>";
+    if (ctaHref) html += '<a class="cta" href="' + ctaHref + '" target="_blank" rel="noopener">' + ctaLabel + "</a>";
+    return html + "</div>";
+  }
+
+  // ---- main check ------------------------------------------------------
+  document.getElementById("run").addEventListener("click", function () {
+    var q = val("question");
+    var chunks = parseChunks(val("chunks"));
+    var out = "";
+
+    var qk = keywords(q);
+    var overlap = chunks.some(function (c) {
+      var ck = keywords(c);
+      return qk.some(function (w) { return ck.indexOf(w) !== -1; });
+    });
+
+    // F3 â€” nothing came back at all
+    if (chunks.length === 0 && answers.inDoc !== "no") {
+      out += card("bad", "Nothing was found in your documents", "F3",
+        "Your search step returned zero pieces. That means the search side of your setup is not connected &mdash; usually the reader brain is not loaded, or the app never built its search shelf.",
+        ["Load your embedding model before starting the server (LM Studio makes you pick it first).",
+         "In Open WebUI, add files to a Knowledge collection and attach it to the chat.",
+         "Run the checker script that came with your guide &mdash; it points at the broken part."],
+        "This is the most common total failure. The chat model still talks, so everything looks fine &mdash; but the answer can only come from the model's memory, not your papers.",
+        LINKS.core, "Guide that fixes this step by step");
+    }
+
+    // F6 â€” brain changed after documents were added
+    if (answers.changedBrain === "yes") {
+      out += card("warn", "Your documents were filed under the old brain", "F6",
+        "Chunks are saved as numbers made by one specific reader brain. If you switch brains, the old numbers do not match the new ones, so searches get flaky or wrong.",
+        ["Re-add (or re-index) your documents under the new reader brain.",
+         "Pick one embedding model and stay with it unless something forces a change."],
+        "Every guide in the series repeats this rule: change the reader brain, rebuild the shelf.",
+        LINKS.core, "See the rule in the starter guide");
+    }
+
+    // F4 â€” made-up answer
+    if (answers.chunksHaveFacts === "no") {
+      out += card("bad", "The answer was not taken from your documents", "F4",
+        "The facts in the answer do not come from the pieces shown. The chat model filled the gaps from its general training instead of saying it does not know.",
+        ["Add one line to your prompt: \u201cAnswer ONLY from the provided context. If it is not there, say you don't know.\u201d",
+         "Then re-ask the same question. If it still invents facts, lower the creativity/temperature setting."],
+        "Models are trained to be helpful, so when the context is thin they would rather guess than refuse. The grounding line gives them permission to say no.",
+        LINKS.core, "Full fix in Part 2, Step 6");
+    }
+
+    // F5 â€” right chunks, generic answer
+    if (answers.chunksHaveFacts === "generic") {
+      out += card("bad", "Good pieces found, but the answer ignores them", "F5",
+        "The search worked &mdash; the right pieces were found. The chat model just answered in a general way instead of using them.",
+        ["Use the same grounding line as for made-up answers: \u201canswer only from the context.\u201d",
+         "Ask narrower questions. Wide questions invite wide, generic replies."],
+        null, LINKS.core, "Grounding prompt walkthrough");
+    }
+
+    // F2 â€” answer is in the document but was not retrieved
+    if (answers.inDoc === "yes" && chunks.length > 0 && !overlap) {
+      out += card("bad", "The information is in your document, but the search missed it", "F2",
+        "You told us the facts exist in the full document, yet none of the found pieces seem related to your question. The search picked the wrong pieces.",
+        ["Search for more pieces: raise k (how many chunks are fetched) from 3\u20135 up to 8\u201310 and retry.",
+         "Check your chunk size. Very large or very small chunks both hide the good parts.",
+         "Make sure the reader brain actually loaded &mdash; a wrong-model silent swap looks exactly like this."],
+        "Retrieval quality is where most \u201cRAG feels dumb\u201d complaints really live. Small setting changes fix most cases.",
+        LINKS.core, "Tuning steps in the guide");
+    }
+
+    // F1 â€” bad cutting (only if chunks exist and nothing louder fired)
+    if (chunks.length > 0 && !out) {
+      var suspicious = chunks.filter(function (c) {
+        var startsBad = /^[a-z]/.test(c);
+        var endsBad = !/[.!?\u201d"']\s*$/.test(c);
+        var tiny = c.length < 60;
+        return startsBad || endsBad || tiny;
+      }).length;
+      if (suspicious >= Math.max(1, Math.ceil(chunks.length / 2))) {
+        out += card("warn", "Your pieces are being cut badly", "F1",
+          "Many of your chunks start or stop in the middle of a sentence, or are tiny scraps. Important facts get sliced in half, so the search can bring half an answer.",
+          ["Lower the chunk size or add overlap (for example 300 characters with 50 overlap) and re-add your documents.",
+           "After changing cut settings, always rebuild the shelf &mdash; old pieces keep the old cuts."],
+          "Cutting is boring but decisive: retrieval can never be better than the pieces it searches.",
+          LINKS.core, "Chunk settings explained");
+      }
+    }
+
+    // Happy path
+    if (!out) {
+      if (answers.inDoc === "no") {
+        out += card("warn", "Your setup may be fine &mdash; the document may not have the answer", "",
+          "You said the information is not in your document at all. No search system can return what was never filed. Try a question you know the document answers.",
+          ["Test with a fact you can point to in the document.",
+           "If that test passes, your setup probably works."],
+          null, LINKS.core, "Learn RAG from zero");
+      } else {
+        out += card("ok", "No obvious problems found", "",
+          "Based on your answers and the pieces you pasted, nothing looks clearly broken. If answers still feel weak, small tuning changes (piece size, number of pieces fetched) usually help.",
+          ["Ask a test question whose answer you can find in the document, and compare.",
+           "Want deeper checking? Our paid checker walks every failure case with you."],
+          null, LINKS.core, "Browse the PaperPup guides");
+      }
+    }
+
+    // Always close with family CTA
+    out += '<div class="card"><h2>Keep going with PaperPup</h2>' +
+      '<p>Plain-English guides that set this up right the first time &mdash; and ship their own checker scripts.</p>' +
+      '<a class="cta" href="' + LINKS.core + '" target="_blank" rel="noopener">All PaperPup guides</a>' +
+      '<a class="cta alt" href="' + LINKS.owui + '" target="_blank" rel="noopener">Open WebUI guide</a>' +
+      '<a class="cta alt" href="' + LINKS.lms + '" target="_blank" rel="noopener">LM Studio guide</a></div>';
+
+    var results = document.getElementById("results");
+    results.innerHTML = out;
+    results.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();
+</script>
+</body>
+</html>
